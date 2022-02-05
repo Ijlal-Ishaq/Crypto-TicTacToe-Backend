@@ -1,13 +1,31 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { create } from 'ipfs-http-client';
 import * as Jimp from 'jimp';
+import { ABI } from './utils/ABI';
+import { NFTCount } from './dbModels/NFTCountModel';
+const Provider = require('@truffle/hdwallet-provider');
+const Web3 = require('web3');
+
 @Injectable()
 export class AppService {
-  async mintNFT(
-    gameNo: string,
-    winner: string,
-    loser: string,
-  ): Promise<string> {
+  constructor(
+    @InjectModel('NFTCount') private readonly NFTCount: Model<NFTCount>,
+  ) {}
+  async mintNFT(winner: string, loser: string): Promise<string> {
+    // *****************************************************************
+    // *****************************************************************
+    // *****************************************************************
+    // generating token
+
+    const count = await this.NFTCount.findByIdAndUpdate(
+      '61feb1cde3057b613098ed1c',
+      { $inc: { count: 1 } },
+    );
+    const gameNo = count.count;
+
     const node = create({
       host: 'ipfs.infura.io',
       port: 5001,
@@ -88,7 +106,28 @@ export class AppService {
       image: 'https://ipfs.infura.io/ipfs/' + res.cid.toString(),
     };
     const URI = await node.add(JSON.stringify(URI_Obj));
-    console.log('https://ipfs.infura.io/ipfs/' + URI.cid.toString());
-    return 'Minted Successfully';
+
+    // *****************************************************************
+    // *****************************************************************
+    // *****************************************************************
+    // minting token
+
+    try {
+      const contractAddress = '0x1B6FC2A8535bFf5f8425806FB9A884a881237faF';
+      const privatekey = process.env.WALLET_KEY;
+      const provider = new Provider(privatekey, process.env.RPC_URL);
+      const web3 = new Web3(provider);
+      const myContract = new web3.eth.Contract(
+        JSON.parse(ABI),
+        contractAddress,
+      );
+      await myContract.methods
+        .mintNFTTT(winner, gameNo, URI.cid.toString())
+        .send({ from: process.env.WALLET_ADDRESS });
+      return 'Minted Successfully';
+    } catch (e) {
+      console.log(e);
+      return 'Minting unsuccessful';
+    }
   }
 }
