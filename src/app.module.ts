@@ -1,9 +1,10 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NFTCountSchema } from './dbModels/NFTCountModel';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { NFTCountSchema } from './dbModels/NFTCountModel';
     MongooseModule.forFeature([{ name: 'NFTCount', schema: NFTCountSchema }]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppGateway, AppService],
 })
 export class AppModule {}

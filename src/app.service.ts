@@ -6,8 +6,10 @@ import { create } from 'ipfs-http-client';
 import * as Jimp from 'jimp';
 import { ABI } from './utils/ABI';
 import { NFTCount } from './dbModels/NFTCountModel';
+import * as admin from 'firebase-admin';
 const Provider = require('@truffle/hdwallet-provider');
 const Web3 = require('web3');
+const uuid = require('uuid');
 
 @Injectable()
 export class AppService {
@@ -128,6 +130,68 @@ export class AppService {
     } catch (e) {
       console.log(e);
       return 'Minting unsuccessful';
+    }
+  }
+
+  async goOnline(address: string, key: string): Promise<string> {
+    const database = admin.database();
+    const res = await database.ref('onlineUsersKey').child(address).get();
+    if (res.val() == null) {
+      key = key.replace('-', '').replace('_', '');
+      await database.ref('onlineUsersKey').child(address).set(key);
+      await database.ref('onlineUsers').child(address).set(address);
+      await database.ref('KeysToUser').child(key).set(address);
+      return key;
+    } else {
+      return 'error';
+    }
+  }
+
+  async goOffline(key: string) {
+    const database = admin.database();
+    key = key.replace('-', '').replace('_', '');
+    const address = await database.ref('KeysToUser').child(key).get();
+    if (address.val() != null) {
+      await database.ref('onlineUsersKey').child(address.val()).remove();
+      await database.ref('onlineUsers').child(address.val()).remove();
+      await database.ref('KeysToUser').child(key).remove();
+    }
+    return;
+  }
+
+  async sendRequest(address: string, key: string) {
+    const database = admin.database();
+    const res = await database.ref('KeysToUser').child(key).get();
+    if (res.val() != null) {
+      await database
+        .ref('usersInfo')
+        .child(res.val())
+        .child('requestedTo')
+        .child(address)
+        .set(address);
+      await database
+        .ref('usersInfo')
+        .child(address)
+        .child('requests')
+        .child(res.val())
+        .set(res.val());
+
+      setTimeout(async () => {
+        await database
+          .ref('usersInfo')
+          .child(res.val())
+          .child('requestedTo')
+          .child(address)
+          .remove();
+        await database
+          .ref('usersInfo')
+          .child(address)
+          .child('requests')
+          .child(res.val())
+          .remove();
+      }, 15000);
+
+      return;
     }
   }
 }

@@ -26,12 +26,16 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/platform-socket.io": "^8.2.6",
+    "@nestjs/websockets": "^8.2.6",
     "@truffle/hdwallet-provider": "^2.0.3",
+    "firebase-admin": "^10.0.2",
     "ipfs-http-client": "^56.0.0",
     "jimp": "^0.16.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "uuid": "^8.3.2",
     "web3": "^1.7.0"
   },
   "devDependencies": {
