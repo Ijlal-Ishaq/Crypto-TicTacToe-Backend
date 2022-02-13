@@ -15,7 +15,12 @@ export class AppController {
   }
 
   @Get('sendRequest/:address/:key')
-  goOffline(@Param('address') address, @Param('key') key) {
+  sendRequest(@Param('address') address, @Param('key') key) {
     return this.appService.sendRequest(address, key);
+  }
+
+  @Get('acceptRequest/:address/:key')
+  acceptRequest(@Param('address') address, @Param('key') key) {
+    return this.appService.acceptRequest(address, key);
   }
 }

@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable prettier/prettier */
+
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,7 +12,6 @@ import { NFTCount } from './dbModels/NFTCountModel';
 import * as admin from 'firebase-admin';
 const Provider = require('@truffle/hdwallet-provider');
 const Web3 = require('web3');
-const uuid = require('uuid');
 
 @Injectable()
 export class AppService {
@@ -193,5 +195,60 @@ export class AppService {
 
       return;
     }
+  }
+
+  async acceptRequest(address: string, key: string) {
+    const database = admin.database();
+    key = key.replace('-', '').replace('_', '');
+    const myAddress = await database.ref('KeysToUser').child(key).get();
+    const opponentAddress = await database
+      .ref('onlineUsers')
+      .child(address)
+      .get();
+    const opponentGame = await database
+      .ref('usersInfo')
+      .child(opponentAddress.val())
+      .child('game')
+      .get();
+
+    if (
+      myAddress.val() != null &&
+      opponentAddress.val() != null &&
+      (opponentGame.val() == '-' || opponentGame.val() == null)
+    ) {
+      const gameKey = await database.ref('gamesRoom').push({
+        player1: opponentAddress.val(),
+        player2: myAddress.val(),
+        turn:
+          Math.floor(Math.random() * 2) == 0
+            ? opponentAddress.val()
+            : myAddress.val(),
+        board: {
+          '1': '-',
+          '2': '-',
+          '3': '-',
+          '4': '-',
+          '5': '-',
+          '6': '-',
+          '7': '-',
+          '8': '-',
+          '9': '-',
+        },
+        winner: '-',
+      });
+
+      await database
+        .ref('usersInfo')
+        .child(opponentAddress.val())
+        .child('game')
+        .set(gameKey.key);
+
+      await database
+        .ref('usersInfo')
+        .child(myAddress.val())
+        .child('game')
+        .set(gameKey.key);
+    }
+    return;
   }
 }
