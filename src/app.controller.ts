@@ -23,4 +23,13 @@ export class AppController {
   acceptRequest(@Param('address') address, @Param('key') key) {
     return this.appService.acceptRequest(address, key);
   }
+
+  @Get('makeAMove/:gameKey/:key/:position')
+  makeAMove(
+    @Param('gameKey') gameKey,
+    @Param('key') key,
+    @Param('position') position,
+  ) {
+    return this.appService.makeAMove(gameKey, key, position);
+  }
 }

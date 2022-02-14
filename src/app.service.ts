@@ -156,7 +156,7 @@ export class AppService {
     if (address.val() != null) {
       await database.ref('onlineUsersKey').child(address.val()).remove();
       await database.ref('onlineUsers').child(address.val()).remove();
-      await database.ref('KeysToUser').child(key).remove();
+      // await database.ref('KeysToUser').child(key).remove();
     }
     return;
   }
@@ -250,5 +250,30 @@ export class AppService {
         .set(gameKey.key);
     }
     return;
+  }
+
+  async makeAMove(gameKey: string, key: string, position: string) {
+    const database = admin.database();
+    const address = await database.ref('KeysToUser').child(key).get();
+    const game = await database.ref('gamesRoom').child(gameKey).get();
+    const isPlayer1 = game.val()['player1'] == address.val() ? true : false;
+
+    if (
+      game.val()['turn'] == address.val() &&
+      game.val()['board'][position.toString()] == '-'
+    ) {
+      await database
+        .ref('gamesRoom')
+        .child(gameKey)
+        .child('turn')
+        .set(isPlayer1 ? game.val()['player2'] : game.val()['player1']);
+
+      await database
+        .ref('gamesRoom')
+        .child(gameKey)
+        .child('board')
+        .child(position.toString())
+        .set(isPlayer1 ? 0 : 1);
+    }
   }
 }
