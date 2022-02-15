@@ -274,6 +274,63 @@ export class AppService {
         .child('board')
         .child(position.toString())
         .set(isPlayer1 ? 0 : 1);
+
+      const result = await this.checkWinner(
+        await database.ref('gamesRoom').child(gameKey).get(),
+      );
+
+      if (result) {
+        await database
+          .ref('gamesRoom')
+          .child(gameKey)
+          .child('winner')
+          .set(address.val());
+
+        await await database
+          .ref('usersInfo')
+          .child(game.val()['player1'])
+          .child('game')
+          .set('-');
+
+        await database
+          .ref('usersInfo')
+          .child(game.val()['player2'])
+          .child('game')
+          .set('-');
+      }
+    }
+  }
+
+  async checkWinner(game: any) {
+    if (
+      ((game.val()['board']['1'] == game.val()['board']['2']) ==
+        game.val()['board']['3'] &&
+        game.val()['board']['1'] != '-') ||
+      ((game.val()['board']['4'] == game.val()['board']['5']) ==
+        game.val()['board']['6'] &&
+        game.val()['board']['4'] != '-') ||
+      ((game.val()['board']['7'] == game.val()['board']['8']) ==
+        game.val()['board']['9'] &&
+        game.val()['board']['7'] != '-') ||
+      ((game.val()['board']['1'] == game.val()['board']['4']) ==
+        game.val()['board']['4'] &&
+        game.val()['board']['1'] != '-') ||
+      ((game.val()['board']['2'] == game.val()['board']['5']) ==
+        game.val()['board']['6'] &&
+        game.val()['board']['2'] != '-') ||
+      ((game.val()['board']['3'] == game.val()['board']['6']) ==
+        game.val()['board']['7'] &&
+        game.val()['board']['3'] != '-') ||
+      ((game.val()['board']['1'] == game.val()['board']['5']) ==
+        game.val()['board']['9'] &&
+        game.val()['board']['1'] != '-') ||
+      ((game.val()['board']['3'] == game.val()['board']['5']) ==
+        game.val()['board']['3'] &&
+        game.val()['board']['7'] != '-')
+    ) {
+      return true;
+    } else {
+      return false;
     }
   }
 }
