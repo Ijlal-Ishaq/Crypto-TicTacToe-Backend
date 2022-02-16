@@ -28,7 +28,8 @@ export class AppService {
       '61feb1cde3057b613098ed1c',
       { $inc: { count: 1 } },
     );
-    const gameNo = count.count;
+    // const gameNo = count.count;
+    const gameNo = 1;
 
     const node = create({
       host: 'ipfs.infura.io',
@@ -117,7 +118,7 @@ export class AppService {
     // minting token
 
     try {
-      const contractAddress = '0x1B6FC2A8535bFf5f8425806FB9A884a881237faF';
+      const contractAddress = '0x7f0c1bAE7Ed06bF1479f1Be3B23CE08c4872dc7e';
       const privatekey = process.env.WALLET_KEY;
       const provider = new Provider(privatekey, process.env.RPC_URL);
       const web3 = new Web3(provider);
@@ -126,12 +127,12 @@ export class AppService {
         contractAddress,
       );
       await myContract.methods
-        .mintNFTTT(winner, gameNo, URI.cid.toString())
+        .setWinner(winner, gameNo, URI.cid.toString())
         .send({ from: process.env.WALLET_ADDRESS });
-      return 'Minted Successfully';
+      return 'successful';
     } catch (e) {
       console.log(e);
-      return 'Minting unsuccessful';
+      return 'unsuccessful';
     }
   }
 
@@ -260,7 +261,8 @@ export class AppService {
 
     if (
       game.val()['turn'] == address.val() &&
-      game.val()['board'][position.toString()] == '-'
+      game.val()['board'][position.toString()] == '-' &&
+      game.val()['winner'] == '-'
     ) {
       await database
         .ref('gamesRoom')
@@ -286,7 +288,7 @@ export class AppService {
           .child('winner')
           .set(address.val());
 
-        await await database
+        await database
           .ref('usersInfo')
           .child(game.val()['player1'])
           .child('game')
@@ -297,36 +299,47 @@ export class AppService {
           .child(game.val()['player2'])
           .child('game')
           .set('-');
+
+        const agaist =
+          game.val()['player1'] == address.val()
+            ? game.val()['player2']
+            : game.val()['player1'];
+
+        await this.mintNFT(address.val(), agaist);
+
+        setTimeout(async () => {
+          await database.ref('gamesRoom').child(gameKey).remove();
+        }, 30000);
       }
     }
   }
 
   async checkWinner(game: any) {
     if (
-      ((game.val()['board']['1'] == game.val()['board']['2']) ==
-        game.val()['board']['3'] &&
+      (game.val()['board']['1'] == game.val()['board']['2'] &&
+        game.val()['board']['2'] == game.val()['board']['3'] &&
         game.val()['board']['1'] != '-') ||
-      ((game.val()['board']['4'] == game.val()['board']['5']) ==
-        game.val()['board']['6'] &&
+      (game.val()['board']['4'] == game.val()['board']['5'] &&
+        game.val()['board']['5'] == game.val()['board']['6'] &&
         game.val()['board']['4'] != '-') ||
-      ((game.val()['board']['7'] == game.val()['board']['8']) ==
-        game.val()['board']['9'] &&
+      (game.val()['board']['7'] == game.val()['board']['8'] &&
+        game.val()['board']['8'] == game.val()['board']['9'] &&
         game.val()['board']['7'] != '-') ||
-      ((game.val()['board']['1'] == game.val()['board']['4']) ==
-        game.val()['board']['4'] &&
+      (game.val()['board']['1'] == game.val()['board']['4'] &&
+        game.val()['board']['4'] == game.val()['board']['7'] &&
         game.val()['board']['1'] != '-') ||
-      ((game.val()['board']['2'] == game.val()['board']['5']) ==
-        game.val()['board']['6'] &&
+      (game.val()['board']['2'] == game.val()['board']['5'] &&
+        game.val()['board']['5'] == game.val()['board']['8'] &&
         game.val()['board']['2'] != '-') ||
-      ((game.val()['board']['3'] == game.val()['board']['6']) ==
-        game.val()['board']['7'] &&
+      (game.val()['board']['3'] == game.val()['board']['6'] &&
+        game.val()['board']['6'] == game.val()['board']['9'] &&
         game.val()['board']['3'] != '-') ||
-      ((game.val()['board']['1'] == game.val()['board']['5']) ==
-        game.val()['board']['9'] &&
+      (game.val()['board']['1'] == game.val()['board']['5'] &&
+        game.val()['board']['5'] == game.val()['board']['9'] &&
         game.val()['board']['1'] != '-') ||
-      ((game.val()['board']['3'] == game.val()['board']['5']) ==
-        game.val()['board']['3'] &&
-        game.val()['board']['7'] != '-')
+      (game.val()['board']['3'] == game.val()['board']['5'] &&
+        game.val()['board']['5'] == game.val()['board']['7'] &&
+        game.val()['board']['3'] != '-')
     ) {
       return true;
     } else {
