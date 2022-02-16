@@ -1,6 +1,10 @@
 {
   "name": "crypto-tic-tac-toe-backend",
   "version": "0.0.1",
+  "engines": {
+    "npm": "8.1.2",
+    "node": "16.x"
+  },
   "description": "",
   "author": "",
   "private": true,
