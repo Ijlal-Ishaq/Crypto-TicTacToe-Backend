@@ -236,6 +236,7 @@ export class AppService {
           '9': '-',
         },
         winner: '-',
+        draw: '-',
       });
 
       await database
