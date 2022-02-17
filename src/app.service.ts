@@ -28,8 +28,7 @@ export class AppService {
       '61feb1cde3057b613098ed1c',
       { $inc: { count: 1 } },
     );
-    // const gameNo = count.count;
-    const gameNo = 1;
+    const gameNo = count.count;
 
     const node = create({
       host: 'ipfs.infura.io',
