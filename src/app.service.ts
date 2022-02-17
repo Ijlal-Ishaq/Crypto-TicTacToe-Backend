@@ -310,9 +310,7 @@ export class AppService {
         setTimeout(async () => {
           await database.ref('gamesRoom').child(gameKey).remove();
         }, 30000);
-      }
-
-      if (!result) {
+      } else {
         const draw = await this.checkDraw(latestGame);
 
         if (draw) {
