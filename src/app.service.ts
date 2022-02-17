@@ -277,9 +277,9 @@ export class AppService {
         .child(position.toString())
         .set(isPlayer1 ? 0 : 1);
 
-      const result = await this.checkWinner(
-        await database.ref('gamesRoom').child(gameKey).get(),
-      );
+      const latestGame = await database.ref('gamesRoom').child(gameKey).get();
+
+      const result = await this.checkWinner(latestGame);
 
       if (result) {
         await database
@@ -311,10 +311,38 @@ export class AppService {
           await database.ref('gamesRoom').child(gameKey).remove();
         }, 30000);
       }
+
+      if (!result) {
+        const draw = await this.checkDraw(latestGame);
+
+        if (draw) {
+          await database
+            .ref('gamesRoom')
+            .child(gameKey)
+            .child('draw')
+            .set('true');
+
+          await database
+            .ref('usersInfo')
+            .child(game.val()['player1'])
+            .child('game')
+            .set('-');
+
+          await database
+            .ref('usersInfo')
+            .child(game.val()['player2'])
+            .child('game')
+            .set('-');
+
+          setTimeout(async () => {
+            await database.ref('gamesRoom').child(gameKey).remove();
+          }, 30000);
+        }
+      }
     }
   }
 
-  async checkWinner(game: any) {
+  async checkWinner(game: any): Promise<boolean> {
     if (
       (game.val()['board']['1'] == game.val()['board']['2'] &&
         game.val()['board']['2'] == game.val()['board']['3'] &&
@@ -340,6 +368,24 @@ export class AppService {
       (game.val()['board']['3'] == game.val()['board']['5'] &&
         game.val()['board']['5'] == game.val()['board']['7'] &&
         game.val()['board']['3'] != '-')
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async checkDraw(game: any): Promise<boolean> {
+    if (
+      game.val()['board']['1'] != '-' ||
+      game.val()['board']['2'] != '-' ||
+      game.val()['board']['3'] != '-' ||
+      game.val()['board']['4'] != '-' ||
+      game.val()['board']['5'] != '-' ||
+      game.val()['board']['6'] != '-' ||
+      game.val()['board']['7'] != '-' ||
+      game.val()['board']['8'] != '-' ||
+      game.val()['board']['9'] != '-'
     ) {
       return true;
     } else {
