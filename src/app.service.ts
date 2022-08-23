@@ -119,7 +119,7 @@ export class AppService {
     const URI_Obj = {
       name: 'NFTTT #' + gameNo,
       description: 'Winner ticket of game ' + gameNo,
-      image: 'https://ipfs.infura.io/ipfs/' + res.cid.toString(),
+      image: res.cid.toString(),
     };
     const URI = await node.add(JSON.stringify(URI_Obj));
 
