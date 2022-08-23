@@ -30,11 +30,23 @@ export class AppService {
     );
     const gameNo = count.count;
 
-    const node = create({
+    const projectId = '2DFPFIAaXx9w2afULnEiEsSk6VF';
+    const projectSecret = '9efe90a3f717625277f8464bc47952f1';
+
+    const auth =
+      'Basic ' +
+      Buffer.from(projectId + ':' + projectSecret).toString('base64');
+
+    const options = {
       host: 'ipfs.infura.io',
       port: 5001,
       protocol: 'https',
-    });
+      headers: {
+        authorization: auth,
+      },
+    };
+
+    const node = create(options);
 
     const image = await Jimp.read('NFTTemplate.png');
 
@@ -87,7 +99,7 @@ export class AppService {
       font,
       445,
       840,
-      winner.substr(0, 9) + '.....' + loser.substr(33, 42),
+      loser.substr(0, 9) + '.....' + loser.substr(33, 42),
     );
 
     const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
